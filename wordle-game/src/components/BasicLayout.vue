@@ -9,8 +9,8 @@
                         :ref="el => { if (el) wordLineRefs[index] = el }"
                         :result="result"
                 ></word-line>
-                <a-button type="primary" @click="getWord">Test</a-button>
-                <key-board @key-press="handleKeyPress"></key-board>
+                <a-button type="primary" @click="">Test</a-button>
+                <key-board @key-press="handleKeyPress" ref="keyboard"></key-board>
             </div>
         </a-layout>
     </a-layout>
@@ -22,6 +22,7 @@ import WordLine from "@/components/WordLine.vue";
 import KeyBoard from "@/components/KeyBoard.vue";
 import {axios} from "@/axios.js";
 import {Modal} from "ant-design-vue";
+import {App} from "@/app";
 
 const rowIndex = ref(0);
 const letterIndex = ref(0);
@@ -29,18 +30,21 @@ const wordLines = ref([['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', 
 const wordLength = ref(5);
 const maxTry = ref(5);
 const result = ref('');
+const keyboard = ref(null);
 // 创建一个 ref 数组来存储每个 word-line 的引用
 const wordLineRefs = ref([]);
 
 
 async function getWord() {
     axios.get('/api/get_word', {
-        params: { length: wordLength.value }
+        params: {length: wordLength.value}
     }).then(data => {
         result.value = data.data.word;
         console.log(result);
     });
 }
+
+
 
 // 辅助函数
 const moveCursor = (rowDelta, letterDelta) => {
@@ -69,8 +73,9 @@ const handleKeyPress = async (key) => {
         if (letterIndex.value === wordLength.value) {
             let res = await wordLineRefs.value[rowIndex.value].flipCards();
             if (res.success) {
+                keyboard.value.handleColor(res.checkResult);
                 moveCursor(1, -wordLength.value);
-                if(res.isWin){
+                if (res.isWin) {
                     //确认后 reload
                     Modal.success({
                         title: '恭喜',
@@ -78,11 +83,11 @@ const handleKeyPress = async (key) => {
                     });
                     restart();
                 }
-                if(rowIndex.value === maxTry.value){
+                if (rowIndex.value === maxTry.value) {
                     Modal.error({
-                        title: '错误',
+                        title: '失败',
                         content: `你输啦，正确答案是${result.value}`,
-                    });
+                    })
                     restart();
                 }
             }
@@ -93,18 +98,22 @@ const handleKeyPress = async (key) => {
         addLetter(key);
     }
 };
+
 function restart() {
     rowIndex.value = 0;
     letterIndex.value = 0;
     wordLines.value = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']];
     getWord();
-    for(let i = 0; i < wordLineRefs.value.length; i++){
+    for (let i = 0; i < wordLineRefs.value.length; i++) {
         wordLineRefs.value[i].reset();
     }
+    keyboard.value.reset();
 }
+
 function reload() {
     window.location.reload();
 }
+
 onMounted(() => {
     window.addEventListener('keydown', handleGlobalKeyPress);
 });
@@ -130,14 +139,14 @@ function check() {
     return true;
 }
 
-onMounted(()=>{
+onMounted(() => {
     getWord();
 })
 </script>
 
 <style lang="less">
 @import "@/assets/theme.less";
-
+@import "@/assets/message.less";
 #app {
     background: #fff;
 }
@@ -158,4 +167,6 @@ onMounted(()=>{
         background-color: #ffffff;
     }
 }
+
+
 </style>

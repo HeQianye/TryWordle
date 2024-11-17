@@ -22,6 +22,7 @@ import {ref, onMounted, watch} from 'vue';
 import WordCard from "@/components/WordCard.vue";
 import axios from "@/axios"
 import {Modal} from "ant-design-vue";
+import {App} from "@/app.ts";
 
 const props = defineProps({
     editIndex: {
@@ -46,7 +47,9 @@ const checkCondition = (index: number): boolean => {
     return props.letters[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
 };
 
-
+function show404Message() {
+    App.showMessage('NOT FOUND');
+}
 function checkWordleGuess(guess: Array<string>, target: string) {
 
     if (guess.length !== target.length) {
@@ -108,10 +111,7 @@ async function getWordDetail(word:string){
 async function flipCards() {
     let test = await getWordDetail(props.letters.join('').toLowerCase());
     if (!test.success) {
-        Modal.error({
-            title: '错误',
-            content: test.msg,
-        });
+        show404Message();
         return { success: false };
     }
 
@@ -143,7 +143,7 @@ async function flipCards() {
     await Promise.all(promises);
 
     const win = res.every(item => item.status === 'correct');
-    return { success: true, isWin: win };
+    return { success: true, isWin: win, checkResult: res};
 }
 function reset() {
     shouldFlip.value = new Array(props.letters.length).fill(false);

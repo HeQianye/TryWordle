@@ -2,8 +2,12 @@
     <!-- 虚拟键盘 -->
     <div class="keyboard">
         <a-space class="keyboard-row" v-for="(row, index) in keyboardRows" :key="index">
-            <a-button 
-                class="keyboard-key gray"
+            <a-button
+                :class="['keyboard-key', 'white',
+                { 'green': keyStatusMap.get(key)==='green'},
+                { 'yellow': keyStatusMap.get(key)==='yellow'},
+                { 'gray': keyStatusMap.get(key)==='gray'}
+                ]"
                 type="primary" 
                 size="large" 
                 v-for="key in row" 
@@ -27,9 +31,92 @@ const keyboardRows = ref([
     ['↵','Z', 'X', 'C', 'V', 'B', 'N', 'M','Del']
 ]);
 
+const keyStatusMap = ref(new Map([
+        ['A', 'default'],
+        ['B', 'default'],
+        ['C', 'default'],
+        ['D', 'default'],
+        ['E', 'default'],
+        ['F', 'default'],
+        ['G', 'default'],
+        ['H', 'default'],
+        ['I', 'default'],
+        ['J', 'default'],
+        ['K', 'default'],
+        ['L', 'default'],
+        ['M', 'default'],
+        ['N', 'default'],
+        ['O', 'default'],
+        ['P', 'default'],
+        ['Q', 'default'],
+        ['R', 'default'],
+        ['S', 'default'],
+        ['T', 'default'],
+        ['U', 'default'],
+        ['V', 'default'],
+        ['W', 'default'],
+        ['X', 'default'],
+        ['Y', 'default'],
+        ['Z', 'default'],
+        ['↵', 'default'],
+        ['Del', 'default']
+    ]
+));
 // 定义 emit 事件
 const emit = defineEmits(['key-press']);
 
+function handleColor(result:any){
+    console.log(result);
+    console.log(keyStatusMap.value);
+    for(let i=0;i<result.length;i++){
+        if(result[i].status==='correct'){
+            keyStatusMap.value.set(result[i].letter, 'green');
+        }else if(result[i].status==='present'){
+            if(keyStatusMap.value.get(result[i].letter)!=='green'){
+                keyStatusMap.value.set(result[i].letter, 'yellow');
+            }
+        }else if(result[i].status==='absent'){
+            keyStatusMap.value.set(result[i].letter, 'gray');
+        }
+    }
+}
+
+function reset() {
+    keyStatusMap.value = new Map([
+        ['A', 'default'],
+        ['B', 'default'],
+        ['C', 'default'],
+        ['D', 'default'],
+        ['E', 'default'],
+        ['F', 'default'],
+        ['G', 'default'],
+        ['H', 'default'],
+        ['I', 'default'],
+        ['J', 'default'],
+        ['K', 'default'],
+        ['L', 'default'],
+        ['M', 'default'],
+        ['N', 'default'],
+        ['O', 'default'],
+        ['P', 'default'],
+        ['Q', 'default'],
+        ['R', 'default'],
+        ['S', 'default'],
+        ['T', 'default'],
+        ['U', 'default'],
+        ['V', 'default'],
+        ['W', 'default'],
+        ['X', 'default'],
+        ['Y', 'default'],
+        ['Z', 'default'],
+        ['↵', 'default'],
+        ['Del', 'default']
+    ]);
+}
+// 获取按键的类名
+const getKeyClass = (key: string) => {
+    return keyStatusMap.value.get(key) || 'default';
+};
 // 处理按键事件
 const handleKeyPress = (key: string) => {
     // 特殊按键处理
@@ -40,6 +127,11 @@ const handleKeyPress = (key: string) => {
     }
     emit('key-press', key);
 };
+
+defineExpose({
+    handleColor,
+    reset
+})
 </script>
 
 
@@ -70,8 +162,7 @@ const handleKeyPress = (key: string) => {
 }
 
 .ant-btn {
-    &.gray {
-
+    &.white {
         &, &:active, &.active {
             color: #5d5d5d !important;
             font-weight: bold;
@@ -85,6 +176,51 @@ const handleKeyPress = (key: string) => {
             border-color: #cfd4d9 !important;
         }
 
+        &[disabled] {
+            .color-disabled();
+        }
+    }
+    &.green {
+        &, &:active, &.active {
+            color: #fff !important;
+            background-color: #7dbd2b !important;
+            border-color: #7dbd2b !important;
+            box-shadow: none !important;
+        }
+        &:hover, &:focus {
+            background-color: #a2d265 !important;
+            border-color: #a2d265 !important;
+        }
+        &[disabled] {
+            .color-disabled();
+        }
+    }
+    &.yellow {
+        &, &:active, &.active {
+            color: #fff !important;
+            background-color: #f4b400 !important;
+            border-color: #f4b400 !important;
+            box-shadow: none !important;
+        }
+        &:hover, &:focus {
+            background-color: #f5c94d !important;
+            border-color: #f5c94d !important;
+        }
+        &[disabled] {
+            .color-disabled();
+        }
+    }
+    &.gray{
+        &, &:active, &.active {
+            color: #fff !important;
+            background-color: #9e9e9e !important;
+            border-color: #9e9e9e !important;
+            box-shadow: none !important;
+        }
+        &:hover, &:focus {
+            background-color: #bdbdbd !important;
+            border-color: #bdbdbd !important;
+        }
         &[disabled] {
             .color-disabled();
         }
