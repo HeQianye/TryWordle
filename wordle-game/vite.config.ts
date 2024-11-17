@@ -23,7 +23,7 @@ const useRemote = false;
 const useHttps = useRemote ? false : false;
 
 // 定义远程代理的URL，根据是否使用远程服务来选择不同的地址
-const proxyRemote = useRemote ? "http://localhost:3000" : "http://localhost:8000/";
+const proxyRemote = useRemote ? "http://localhost:3000" : "http://localhost:5000/";
 
 // 导出一个定义配置的函数
 export default defineConfig({

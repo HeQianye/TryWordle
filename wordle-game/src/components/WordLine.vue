@@ -1,5 +1,8 @@
 <template>
     <a-popover trigger="hover" placement="right" title="Translation">
+        <template #content>
+            <WordCard/>
+        </template>
         <div class="word-line">
             <div
                     class="word-line-item"
@@ -16,6 +19,7 @@
 </template>
 <script setup lang="ts">
 import {ref, onMounted, watch} from 'vue';
+import WordCard from "@/components/WordCard.vue";
 
 const props = defineProps({
     editIndex: {
