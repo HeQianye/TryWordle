@@ -64,6 +64,7 @@ const addLetter = (key) => {
 
 // 主处理函数
 const handleKeyPress = async (key) => {
+
     if (key === 'Enter') {
         if (letterIndex.value === wordLength.value) {
             let res = await wordLineRefs.value[rowIndex.value].flipCards();
@@ -97,6 +98,9 @@ function restart() {
     letterIndex.value = 0;
     wordLines.value = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']];
     getWord();
+    for(let i = 0; i < wordLineRefs.value.length; i++){
+        wordLineRefs.value[i].reset();
+    }
 }
 function reload() {
     window.location.reload();

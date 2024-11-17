@@ -6,7 +6,7 @@
         <div class="word-line">
             <div
                     class="word-line-item"
-                    v-for="(letter, index) in letters"
+                    v-for="(letter, index) in props.letters"
                     :key="index"
                     :class="{ 'flip-vertical': shouldFlip[index],
                           'green-card': isGreen[index],
@@ -29,7 +29,7 @@ const props = defineProps({
         default: 0
     },
     letters: {
-        type: Array,
+        type: Array<string>,
         default: () => ['', '', '', '', '']
     },
     result:{
@@ -38,13 +38,12 @@ const props = defineProps({
     }
 });
 
-const letters = ref(props.letters);
-const shouldFlip = ref(new Array(letters.value.length).fill(false));
-const isGreen = ref(new Array(letters.value.length).fill(false));
-const isYellow = ref(new Array(letters.value.length).fill(false));
+const shouldFlip = ref(new Array(props.letters.length).fill(false));
+const isGreen = ref(new Array(props.letters.length).fill(false));
+const isYellow = ref(new Array(props.letters.length).fill(false));
 const checkCondition = (index: number): boolean => {
     // 这里可以根据实际需求编写判断逻辑
-    return letters.value[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
+    return props.letters[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
 };
 
 
@@ -107,7 +106,7 @@ async function getWordDetail(word:string){
 }
 
 async function flipCards() {
-    let test = await getWordDetail(letters.value.join('').toLowerCase());
+    let test = await getWordDetail(props.letters.join('').toLowerCase());
     if (!test.success) {
         Modal.error({
             title: '错误',
@@ -116,7 +115,7 @@ async function flipCards() {
         return { success: false };
     }
 
-    const res = checkWordleGuess(letters.value, props.result.toUpperCase());
+    const res = checkWordleGuess(props.letters, props.result.toUpperCase());
 
     // 创建一个 Promise 数组
     const promises = shouldFlip.value.map((_, index) => {
@@ -146,8 +145,13 @@ async function flipCards() {
     const win = res.every(item => item.status === 'correct');
     return { success: true, isWin: win };
 }
+function reset() {
+    shouldFlip.value = new Array(props.letters.length).fill(false);
+    isGreen.value = new Array(props.letters.length).fill(false);
+    isYellow.value = new Array(props.letters.length).fill(false);
+}
 
-defineExpose({flipCards});
+defineExpose({flipCards, reset});
 </script>
 
 <style scoped lang="less">
