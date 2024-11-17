@@ -7,7 +7,9 @@
                         :edit-index="letterIndex"
                         :letters="line"
                         :ref="el => { if (el) wordLineRefs[index] = el }"
+                        :result="result"
                 ></word-line>
+                <a-button type="primary" @click="getWord">Test</a-button>
                 <key-board @key-press="handleKeyPress"></key-board>
             </div>
         </a-layout>
@@ -18,14 +20,28 @@
 import {ref, onMounted, onBeforeUnmount} from 'vue';
 import WordLine from "@/components/WordLine.vue";
 import KeyBoard from "@/components/KeyBoard.vue";
+import {axios} from "@/axios.js";
+import {Modal} from "ant-design-vue";
 
 const rowIndex = ref(0);
 const letterIndex = ref(0);
 const wordLines = ref([['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']]);
 const wordLength = ref(5);
-const result = 'hello';
+const maxTry = ref(5);
+const result = ref('');
 // 创建一个 ref 数组来存储每个 word-line 的引用
 const wordLineRefs = ref([]);
+
+
+async function getWord() {
+    axios.get('/api/get_word', {
+        params: { length: wordLength.value }
+    }).then(data => {
+        result.value = data.data.word;
+        console.log(result);
+    });
+}
+
 // 辅助函数
 const moveCursor = (rowDelta, letterDelta) => {
     rowIndex.value += rowDelta;
@@ -47,11 +63,28 @@ const addLetter = (key) => {
 };
 
 // 主处理函数
-const handleKeyPress = (key) => {
+const handleKeyPress = async (key) => {
     if (key === 'Enter') {
         if (letterIndex.value === wordLength.value) {
-            wordLineRefs.value[rowIndex.value].flipCards();
-            moveCursor(1, -wordLength.value);
+            let res = await wordLineRefs.value[rowIndex.value].flipCards();
+            if (res.success) {
+                moveCursor(1, -wordLength.value);
+                if(res.isWin){
+                    //确认后 reload
+                    Modal.success({
+                        title: '恭喜',
+                        content: '你赢啦',
+                    });
+                    restart();
+                }
+                if(rowIndex.value === maxTry.value){
+                    Modal.error({
+                        title: '错误',
+                        content: `你输啦，正确答案是${result.value}`,
+                    });
+                    restart();
+                }
+            }
         }
     } else if (key === 'Backspace') {
         clearLastLetter();
@@ -59,7 +92,15 @@ const handleKeyPress = (key) => {
         addLetter(key);
     }
 };
-
+function restart() {
+    rowIndex.value = 0;
+    letterIndex.value = 0;
+    wordLines.value = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']];
+    getWord();
+}
+function reload() {
+    window.location.reload();
+}
 onMounted(() => {
     window.addEventListener('keydown', handleGlobalKeyPress);
 });
@@ -84,6 +125,10 @@ const handleGlobalKeyPress = (event) => {
 function check() {
     return true;
 }
+
+onMounted(()=>{
+    getWord();
+})
 </script>
 
 <style lang="less">

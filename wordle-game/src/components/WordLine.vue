@@ -20,6 +20,8 @@
 <script setup lang="ts">
 import {ref, onMounted, watch} from 'vue';
 import WordCard from "@/components/WordCard.vue";
+import axios from "@/axios"
+import {Modal} from "ant-design-vue";
 
 const props = defineProps({
     editIndex: {
@@ -29,6 +31,10 @@ const props = defineProps({
     letters: {
         type: Array,
         default: () => ['', '', '', '', '']
+    },
+    result:{
+        type:String,
+        default: () => ''
     }
 });
 
@@ -36,7 +42,6 @@ const letters = ref(props.letters);
 const shouldFlip = ref(new Array(letters.value.length).fill(false));
 const isGreen = ref(new Array(letters.value.length).fill(false));
 const isYellow = ref(new Array(letters.value.length).fill(false));
-
 const checkCondition = (index: number): boolean => {
     // 这里可以根据实际需求编写判断逻辑
     return letters.value[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
@@ -44,6 +49,7 @@ const checkCondition = (index: number): boolean => {
 
 
 function checkWordleGuess(guess: Array<string>, target: string) {
+
     if (guess.length !== target.length) {
         throw new Error("猜的单词长度必须与目标单词长度相同");
     }
@@ -88,28 +94,59 @@ function checkWordleGuess(guess: Array<string>, target: string) {
 
     return result;
 }
+async function getWordDetail(word:string){
+
+    let msg = await axios.post("/api/find_word",{word:word});
+    if(msg.success){
+        return {...msg.data, success:true};
+    }else{
+        return {success:false,msg:msg.message};
+    }
 
 
-const flipCards = () => {
-    const result = checkWordleGuess(letters.value, 'HELLO'); // 假设目标单词是 'hello'
-    shouldFlip.value.forEach((_, index) => {
-        setTimeout(() => {
-            shouldFlip.value[index] = !shouldFlip.value[index];
-            switch (result[index].status) {
-                case 'correct':
-                    isGreen.value[index] = true;
-                    break;
-                case 'present':
-                    isYellow.value[index] = true;
-                    break;
-                default:
-                    isGreen.value[index] = false;
-                    isYellow.value[index] = false;
-                    break;
-            }
-        }, index * 500); // 每个卡片间隔500毫秒翻转
+}
+
+async function flipCards() {
+    let test = await getWordDetail(letters.value.join('').toLowerCase());
+    if (!test.success) {
+        Modal.error({
+            title: '错误',
+            content: test.msg,
+        });
+        return { success: false };
+    }
+
+    const res = checkWordleGuess(letters.value, props.result.toUpperCase());
+
+    // 创建一个 Promise 数组
+    const promises = shouldFlip.value.map((_, index) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                shouldFlip.value[index] = !shouldFlip.value[index];
+                switch (res[index].status) {
+                    case 'correct':
+                        isGreen.value[index] = true;
+                        break;
+                    case 'present':
+                        isYellow.value[index] = true;
+                        break;
+                    default:
+                        isGreen.value[index] = false;
+                        isYellow.value[index] = false;
+                        break;
+                }
+                resolve();
+            }, index * 500); // 每个卡片间隔500毫秒翻转
+        });
     });
-};
+
+    // 等待所有 Promise 完成
+    await Promise.all(promises);
+
+    const win = res.every(item => item.status === 'correct');
+    return { success: true, isWin: win };
+}
+
 defineExpose({flipCards});
 </script>
 
