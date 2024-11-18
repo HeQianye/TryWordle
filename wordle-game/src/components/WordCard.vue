@@ -1,60 +1,54 @@
 <template>
-  <div class="word-cards">
-    <a-card v-for="word in words" :key="word.wordId" :title="word.headWord">
-      <a-row>
-        <a-col :span="12">
-          <strong>词义:</strong>
-          <ul>
-            <li v-for="(trans, index) in word.content.word" :key="index">{{ trans.tranCn }}</li>
-          </ul>
-        </a-col>
-      </a-row>
-    </a-card>
-  </div>
+    <div class="word-cards">
+        <a-typography :title="props.data.word">
+            <a-typography-title :level="3">{{ props.data.word }}</a-typography-title>
+            <span> {{ props.data.pronunciation.replace("\\n", "   ") }}</span>
+            <br/>
+            <a-typography-text strong>词义:</a-typography-text>
+            <a-typography-paragraph>
+                <ul v-for="(item, index) in meaningItems" :key="index">
+                    <li>
+                        {{ item }}
+                    </li>
+                </ul>
+            </a-typography-paragraph>
+            <a-typography-text strong>用法:</a-typography-text>
+            <a-typography-paragraph>
+                <ul v-for="(item, index) in props.data.example.split('\\n').slice(0,2)" :key="index">
+                   <li>{{ item }}</li>
+                </ul>
+            </a-typography-paragraph>
+        </a-typography>
+    </div>
 </template>
 
-<script>
-import { Card, Row, Col } from 'ant-design-vue';
+<script setup>
+import { computed } from 'vue';
 
-export default {
-  components: {
-    ACard: Card,
-    ARow: Row,
-    ACol: Col,
-  },
-  data() {
-    return {
-      words: [
-        // 这里可以动态加载数据，示例数据如下
-        {
-          wordRank: 1,
-          headWord: "refuse",
-          content: {
-            word: {
-              wordHead: "refuse",
-              wordId: "CET4luan_2_1",
-              content: {
-                sentence: {
-                  sentences: [
-                    { sContent: "She asked him to leave, but he refused.", sCn: "她叫他走，但他不肯。" },
-                    { sContent: "When he offered all that money, I could hardly refuse (= could not refuse ), could I?", sCn: "他愿意给那么多钱，我怎么可能拒绝呢？" }
-                  ]
-                },
-                trans: [
-                  { tranCn: "拒绝", pos: "v", tranOther: "to say firmly that you will not do something that someone has asked you to do" }
-                ]
-              }
-            }
-          }
-        },
-      ]
-    };
-  }
-};
+const props = defineProps({
+    data: {
+        type: Object,
+        default: () => ({
+            word: '',
+            pronunciation: '',
+            meaning: '',
+            example: ''
+        })
+    }
+});
+
+// 计算属性，将 meaning 按照 \n 分割成数组
+const meaningItems = computed(() => {
+    return props.data.meaning ? props.data.meaning.split("\\n") : [];
+});
 </script>
 
 <style scoped>
-.word-cards .ant-card {
-  margin-bottom: 16px;
+.word-cards {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 5px;
+    white-space: pre-line;
+    overflow: auto;
 }
 </style>

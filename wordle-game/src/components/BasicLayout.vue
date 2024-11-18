@@ -9,7 +9,6 @@
                         :ref="el => { if (el) wordLineRefs[index] = el }"
                         :result="result"
                 ></word-line>
-                <a-button type="primary" @click="">Test</a-button>
                 <key-board @key-press="handleKeyPress" ref="keyboard"></key-board>
             </div>
         </a-layout>

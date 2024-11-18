@@ -1,16 +1,18 @@
 <template>
-    <a-popover trigger="hover" placement="right" title="Translation">
+    <a-popover title="Translation" :open="showTranslation">
         <template #content>
-            <WordCard/>
+            <WordCard :data="translation"/>
         </template>
-        <div class="word-line">
+        <div class="word-line" @mouseover="handleMouseEnter"
+        @mouseout="handleMouseOut"
+        >
             <div
                     class="word-line-item"
                     v-for="(letter, index) in props.letters"
-                    :key="index"
+                    :key="letter+index"
                     :class="{ 'flip-vertical': shouldFlip[index],
                           'green-card': isGreen[index],
-                          'yellow-card': isYellow[index]}"
+                          'yellow-card': isYellow[index]                    }"
             >
                 {{ letter }}
             </div>
@@ -33,8 +35,8 @@ const props = defineProps({
         type: Array<string>,
         default: () => ['', '', '', '', '']
     },
-    result:{
-        type:String,
+    result: {
+        type: String,
         default: () => ''
     }
 });
@@ -42,6 +44,12 @@ const props = defineProps({
 const shouldFlip = ref(new Array(props.letters.length).fill(false));
 const isGreen = ref(new Array(props.letters.length).fill(false));
 const isYellow = ref(new Array(props.letters.length).fill(false));
+const showTranslation = ref(false);
+const emptyTranslation = {    word: '',
+    pronunciation: '',
+    meaning: '',
+    example: ''};
+const translation = ref(emptyTranslation);
 const checkCondition = (index: number): boolean => {
     // 这里可以根据实际需求编写判断逻辑
     return props.letters[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
@@ -50,6 +58,7 @@ const checkCondition = (index: number): boolean => {
 function show404Message() {
     App.showMessage('NOT FOUND');
 }
+
 function checkWordleGuess(guess: Array<string>, target: string) {
 
     if (guess.length !== target.length) {
@@ -66,10 +75,10 @@ function checkWordleGuess(guess: Array<string>, target: string) {
     // 第一步：检查完全匹配的字母
     for (let i = 0; i < guess.length; i++) {
         if (guessLetters[i] === targetLetters[i]) {
-            result.push({ letter: guessLetters[i], status: 'correct' });
+            result.push({letter: guessLetters[i], status: 'correct'});
             usedTargetLetters[i] = true;
         } else {
-            result.push({ letter: guessLetters[i], status: 'absent' });
+            result.push({letter: guessLetters[i], status: 'absent'});
         }
     }
 
@@ -96,13 +105,14 @@ function checkWordleGuess(guess: Array<string>, target: string) {
 
     return result;
 }
-async function getWordDetail(word:string){
 
-    let msg = await axios.post("/api/find_word",{word:word});
-    if(msg.success){
-        return {...msg.data, success:true};
-    }else{
-        return {success:false,msg:msg.message};
+async function getWordDetail(word: string) {
+
+    let msg = await axios.post("/api/find_word", {word: word});
+    if (msg.success) {
+        return {...msg.data, success: true};
+    } else {
+        return {success: false, msg: msg.message};
     }
 
 
@@ -112,9 +122,10 @@ async function flipCards() {
     let test = await getWordDetail(props.letters.join('').toLowerCase());
     if (!test.success) {
         show404Message();
-        return { success: false };
+        return {success: false};
     }
-
+    console.log(test);
+    translation.value = test.word;
     const res = checkWordleGuess(props.letters, props.result.toUpperCase());
 
     // 创建一个 Promise 数组
@@ -143,12 +154,26 @@ async function flipCards() {
     await Promise.all(promises);
 
     const win = res.every(item => item.status === 'correct');
-    return { success: true, isWin: win, checkResult: res};
+    return {success: true, isWin: win, checkResult: res};
 }
+
 function reset() {
+    console.log('reset word line');
     shouldFlip.value = new Array(props.letters.length).fill(false);
     isGreen.value = new Array(props.letters.length).fill(false);
     isYellow.value = new Array(props.letters.length).fill(false);
+    translation.value = emptyTranslation;
+}
+
+function handleMouseEnter() {
+  if(translation.value.word !== ''){
+      showTranslation.value = true;
+  }
+}
+
+function handleMouseOut() {
+  // 在这里可以添加其他逻辑，比如隐藏提示信息等
+    showTranslation.value = false;
 }
 
 defineExpose({flipCards, reset});
@@ -192,4 +217,5 @@ defineExpose({flipCards, reset});
         }
     }
 }
+
 </style>

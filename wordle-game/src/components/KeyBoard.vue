@@ -1,16 +1,16 @@
 <template>
     <!-- 虚拟键盘 -->
     <div class="keyboard">
-        <a-space class="keyboard-row" v-for="(row, index) in keyboardRows" :key="index">
+        <a-space class="keyboard-row" v-for="(row, index) in keyboardRows" :key="row[0]+index">
             <a-button
                 :class="['keyboard-key', 'white',
                 { 'green': keyStatusMap.get(key)==='green'},
                 { 'yellow': keyStatusMap.get(key)==='yellow'},
                 { 'gray': keyStatusMap.get(key)==='gray'}
                 ]"
-                type="primary" 
-                size="large" 
-                v-for="key in row" 
+                type="primary"
+                size="large"
+                v-for="key in row"
                 :key="key"
                 @click="handleKeyPress(key)"
             >
@@ -65,53 +65,39 @@ const keyStatusMap = ref(new Map([
 // 定义 emit 事件
 const emit = defineEmits(['key-press']);
 
-function handleColor(result:any){
+function handleColor(result: any[]) {
     console.log(result);
     console.log(keyStatusMap.value);
-    for(let i=0;i<result.length;i++){
-        if(result[i].status==='correct'){
-            keyStatusMap.value.set(result[i].letter, 'green');
-        }else if(result[i].status==='present'){
-            if(keyStatusMap.value.get(result[i].letter)!=='green'){
-                keyStatusMap.value.set(result[i].letter, 'yellow');
-            }
-        }else if(result[i].status==='absent'){
-            keyStatusMap.value.set(result[i].letter, 'gray');
+
+    for (let i = 0; i < result.length; i++) {
+        const { letter, status } = result[i];
+        switch (status) {
+            case 'correct':
+                keyStatusMap.value.set(letter, 'green');
+                break;
+            case 'present':
+                if (keyStatusMap.value.get(letter) !== 'green') {
+                    keyStatusMap.value.set(letter, 'yellow');
+                }
+                break;
+            case 'absent':
+                keyStatusMap.value.set(letter, 'gray');
+                break;
+            default:
+                console.warn(`Unknown status: ${status}`);
+                break;
         }
     }
 }
 
 function reset() {
-    keyStatusMap.value = new Map([
-        ['A', 'default'],
-        ['B', 'default'],
-        ['C', 'default'],
-        ['D', 'default'],
-        ['E', 'default'],
-        ['F', 'default'],
-        ['G', 'default'],
-        ['H', 'default'],
-        ['I', 'default'],
-        ['J', 'default'],
-        ['K', 'default'],
-        ['L', 'default'],
-        ['M', 'default'],
-        ['N', 'default'],
-        ['O', 'default'],
-        ['P', 'default'],
-        ['Q', 'default'],
-        ['R', 'default'],
-        ['S', 'default'],
-        ['T', 'default'],
-        ['U', 'default'],
-        ['V', 'default'],
-        ['W', 'default'],
-        ['X', 'default'],
-        ['Y', 'default'],
-        ['Z', 'default'],
-        ['↵', 'default'],
-        ['Del', 'default']
-    ]);
+    keyStatusMap.value.clear();
+    // 重新设置默认状态
+    keyboardRows.value.forEach(row => {
+        row.forEach(key => {
+            keyStatusMap.value.set(key, 'default');
+        });
+    });
 }
 // 获取按键的类名
 const getKeyClass = (key: string) => {
