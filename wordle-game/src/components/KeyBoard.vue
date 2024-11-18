@@ -122,6 +122,7 @@ defineExpose({
 
 
 <style scoped lang="less">
+@import "@/assets/theme.less";
 .keyboard {
     padding-top:20px;
     display: flex;
@@ -147,69 +148,4 @@ defineExpose({
   cursor: not-allowed;
 }
 
-.ant-btn {
-    &.white {
-        &, &:active, &.active {
-            color: #5d5d5d !important;
-            font-weight: bold;
-            box-shadow: none !important;
-            background-color: #E1EAF4 !important;
-            border-color: #E1EAF4 !important;
-        }
-
-        &:hover, &:focus {
-            background-color: #cfd4d9 !important;
-            border-color: #cfd4d9 !important;
-        }
-
-        &[disabled] {
-            .color-disabled();
-        }
-    }
-    &.green {
-        &, &:active, &.active {
-            color: #fff !important;
-            background-color: #7dbd2b !important;
-            border-color: #7dbd2b !important;
-            box-shadow: none !important;
-        }
-        &:hover, &:focus {
-            background-color: #a2d265 !important;
-            border-color: #a2d265 !important;
-        }
-        &[disabled] {
-            .color-disabled();
-        }
-    }
-    &.yellow {
-        &, &:active, &.active {
-            color: #fff !important;
-            background-color: #f4b400 !important;
-            border-color: #f4b400 !important;
-            box-shadow: none !important;
-        }
-        &:hover, &:focus {
-            background-color: #f5c94d !important;
-            border-color: #f5c94d !important;
-        }
-        &[disabled] {
-            .color-disabled();
-        }
-    }
-    &.gray{
-        &, &:active, &.active {
-            color: #fff !important;
-            background-color: #9e9e9e !important;
-            border-color: #9e9e9e !important;
-            box-shadow: none !important;
-        }
-        &:hover, &:focus {
-            background-color: #bdbdbd !important;
-            border-color: #bdbdbd !important;
-        }
-        &[disabled] {
-            .color-disabled();
-        }
-    }
-}
 </style>

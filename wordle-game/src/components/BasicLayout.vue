@@ -1,5 +1,18 @@
 <template>
     <a-layout id="basic-app-layout">
+        <div class="basic-app-header">
+            <a-flex align="center" justify="space-between" class="title" horizontal>
+                <a-button class="white" type="primary" @click="giveUp">
+                    GIVE UP
+                </a-button>
+                <div class="basic-app-title">
+                    TRY WORDLE
+                </div>
+                <a-button class="white" type="primary" @click="restart">
+                    RESTART
+                </a-button>
+            </a-flex>
+        </div>
         <a-layout>
             <div class="basic-app-container">
                 <word-line
@@ -42,7 +55,6 @@ async function getWord() {
         console.log(result);
     });
 }
-
 
 
 // 辅助函数
@@ -112,7 +124,10 @@ function restart() {
 function reload() {
     window.location.reload();
 }
-
+function giveUp() {
+    App.showMessage(result.value);
+    restart();
+}
 onMounted(() => {
     window.addEventListener('keydown', handleGlobalKeyPress);
 });
@@ -146,14 +161,36 @@ onMounted(() => {
 <style lang="less">
 @import "@/assets/theme.less";
 @import "@/assets/message.less";
+
 #app {
     background: #fff;
 }
 
 #basic-app-layout {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    //width: 100vw;
+    //height: 100vh;
+    overflow: auto;
+
+    .basic-app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 24px;
+        height: 48px;
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+
+        .title {
+            width: calc(600px);
+            margin: auto;
+        }
+
+        .basic-app-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+        }
+    }
 
     .ant-layout {
         background: #fff;
@@ -164,6 +201,7 @@ onMounted(() => {
         width: 500px;
         height: calc(100vh - 48px);
         background-color: #ffffff;
+        margin-top: 10px;
     }
 }
 
