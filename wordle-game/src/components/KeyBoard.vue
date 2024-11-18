@@ -1,12 +1,13 @@
 <template>
     <!-- 虚拟键盘 -->
     <div class="keyboard">
-        <a-space class="keyboard-row" v-for="(row, index) in keyboardRows" :key="row[0]+index">
+        <a-space class="keyboard-row" v-for="(row, index) in keyboardRows" :key="index">
             <a-button
                 :class="['keyboard-key', 'white',
                 { 'green': keyStatusMap.get(key)==='green'},
                 { 'yellow': keyStatusMap.get(key)==='yellow'},
-                { 'gray': keyStatusMap.get(key)==='gray'}
+                { 'gray': keyStatusMap.get(key)==='gray'},
+                {'long-key': key === '↵' || key === 'Del'}
                 ]"
                 type="primary"
                 size="large"
@@ -147,5 +148,7 @@ defineExpose({
   pointer-events: none;
   cursor: not-allowed;
 }
-
+.long-key{
+    width: 90px;
+}
 </style>

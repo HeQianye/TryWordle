@@ -9,7 +9,7 @@
             <div
                     class="word-line-item"
                     v-for="(letter, index) in props.letters"
-                    :key="letter+index"
+                    :key="index"
                     :class="{ 'flip-vertical': shouldFlip[index],
                           'green-card': isGreen[index],
                           'yellow-card': isYellow[index]                    }"
@@ -54,7 +54,11 @@ const checkCondition = (index: number): boolean => {
     // 这里可以根据实际需求编写判断逻辑
     return props.letters[index] === 'Y'; // 示例条件：字母为 'Y' 时变为绿色
 };
-
+watch (() => props.letters?.length, (newValue) => {
+    shouldFlip.value = new Array(newValue).fill(false);
+    isGreen.value = new Array(newValue).fill(false);
+    isYellow.value = new Array(newValue).fill(false);
+});
 function show404Message() {
     App.showMessage('NOT FOUND');
 }
@@ -62,7 +66,7 @@ function show404Message() {
 function checkWordleGuess(guess: Array<string>, target: string) {
 
     if (guess.length !== target.length) {
-        throw new Error("猜的单词长度必须与目标单词长度相同");
+        throw new Error('Invalid guess length')
     }
 
     const result = [];
@@ -127,7 +131,7 @@ async function flipCards() {
     console.log(test);
     translation.value = test.word;
     const res = checkWordleGuess(props.letters, props.result.toUpperCase());
-
+    console.log(res);
     // 创建一个 Promise 数组
     const promises = shouldFlip.value.map((_, index) => {
         return new Promise((resolve) => {

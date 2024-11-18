@@ -8,8 +8,8 @@
                 <div class="basic-app-title">
                     TRY WORDLE
                 </div>
-                <a-button class="white" type="primary" @click="restart">
-                    RESTART
+                <a-button class="white" type="primary" @click="settingsVisible = true">
+                    SETTING
                 </a-button>
             </a-flex>
         </div>
@@ -22,10 +22,24 @@
                         :ref="el => { if (el) wordLineRefs[index] = el }"
                         :result="result"
                 ></word-line>
-                <key-board @key-press="handleKeyPress" ref="keyboard"></key-board>
+                <key-board @key-press="handleKeyPress" ref="keyboardRef"></key-board>
             </div>
         </a-layout>
     </a-layout>
+    <a-modal v-model:open="settingsVisible" title="Settings" @ok="applySettings">
+        <a-form>
+            <a-form-item label="Word Length">
+                <a-select v-model:value="selectedWordLength" style="width: 120px">
+                    <a-select-option v-for="length in [3, 4, 5, 6, 7, 8, 9, 10]" :key="length" :value="length">
+                        {{ length }}
+                    </a-select-option>
+                </a-select>
+            </a-form-item>
+            <a-form-item label="Max Try">
+                <a-input-number v-model:value="selectedMaxTry" :min="1" :max="10" style="width: 120px"></a-input-number>
+            </a-form-item>
+        </a-form>
+    </a-modal>
 </template>
 
 <script setup>
@@ -35,16 +49,25 @@ import KeyBoard from "@/components/KeyBoard.vue";
 import {axios} from "@/axios.js";
 import {Modal} from "ant-design-vue";
 import {App} from "@/app";
-
+const wordLength = ref(5);
+const maxTry = ref(6);
 const rowIndex = ref(0);
 const letterIndex = ref(0);
-const wordLines = ref([['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']]);
-const wordLength = ref(5);
-const maxTry = ref(5);
+const wordLines = ref(getEmptyMatrix(maxTry.value, wordLength.value));
 const result = ref('');
-const keyboard = ref(null);
+const keyboardRef = ref(null);
 // 创建一个 ref 数组来存储每个 word-line 的引用
 const wordLineRefs = ref([]);
+const selectedWordLength = ref(wordLength.value);
+const selectedMaxTry = ref(maxTry.value);
+const settingsVisible = ref(false);
+const applySettings = () => {
+    wordLength.value = selectedWordLength.value;
+    maxTry.value = selectedMaxTry.value;
+    restart();
+    settingsVisible.value = false;
+};
+
 
 
 async function getWord() {
@@ -56,7 +79,9 @@ async function getWord() {
     });
 }
 
-
+function getEmptyMatrix(row, col) {
+    return Array.from({length: row}, () => Array(col).fill(''));
+}
 // 辅助函数
 const moveCursor = (rowDelta, letterDelta) => {
     rowIndex.value += rowDelta;
@@ -84,20 +109,20 @@ const handleKeyPress = async (key) => {
         if (letterIndex.value === wordLength.value) {
             let res = await wordLineRefs.value[rowIndex.value].flipCards();
             if (res.success) {
-                keyboard.value.handleColor(res.checkResult);
+                keyboardRef.value.handleColor(res.checkResult);
                 moveCursor(1, -wordLength.value);
                 if (res.isWin) {
                     //确认后 reload
                     Modal.success({
-                        title: '恭喜',
-                        content: '你赢啦',
+                        title: "CONGRATULATION!!",
+                        content: `You win, the answer is ${result.value}`,
                     });
                     restart();
                 }
                 if (rowIndex.value === maxTry.value) {
                     Modal.error({
-                        title: '失败',
-                        content: `你输啦，正确答案是${result.value}`,
+                        title: 'FAILURE',
+                        content: `You lost, the answer is ${result.value}`,
                     })
                     restart();
                 }
@@ -113,12 +138,12 @@ const handleKeyPress = async (key) => {
 function restart() {
     rowIndex.value = 0;
     letterIndex.value = 0;
-    wordLines.value = [['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', ''], ['', '', '', '', '']];
+    wordLines.value = getEmptyMatrix(maxTry.value, wordLength.value);
     getWord();
     for (let i = 0; i < wordLineRefs.value.length; i++) {
         wordLineRefs.value[i].reset();
     }
-    keyboard.value.reset();
+    keyboardRef.value.reset();
 }
 
 function reload() {
@@ -169,7 +194,6 @@ onMounted(() => {
 #basic-app-layout {
     //width: 100vw;
     //height: 100vh;
-    overflow: auto;
 
     .basic-app-header {
         display: flex;
